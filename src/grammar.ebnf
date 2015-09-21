@@ -9,14 +9,18 @@
 document ::= statement*
 
 statement ::=
-	( 'title' ':' message
-	| 'participant' actor ('as' alias)?
+	( 'title' ':' message (attributes)? 
+	| 'participant' actor ('as' alias)? (attributes)?
 	| 'note' (
 		( 'left of' | 'right of') actor
 		| 'over' (actor | actor ',' actor)
-		) ':' message
-	| actor ( '-' | '--' ) ( '>' | '>>' )? actor ':' message
+		) ':' message (attributes)?
+	| actor ( '-' | '--' ) ( '>' | '>>' )? actor ':' message (attributes)?
 	)
+
+attributes ::=  '[' attribute (',' attribute)* ']'
+
+attribute ::= key '=' '"' value '"'
 
 /*
 message ::= [^\n]+

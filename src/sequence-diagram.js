@@ -115,12 +115,12 @@
 	/**
 	 * Returns the text's bounding box
 	 */
-	Raphael.fn.text_bbox = function (text, font) {
+	Raphael.fn.text_bbox = function (message, font) {
 		var p;
 		if (font._obj) {
-			p = this.print_center(0, 0, text, font._obj, font['font-size']);
+			p = this.print_center(0, 0, message.text, font._obj, font['font-size']);
 		} else {
-			p = this.text(0, 0, text);
+			p = this.text(0, 0, message.text);
 			p.attr(font);
 		}
 
@@ -263,7 +263,7 @@
 			}
 
 			_.each(actors, function(a) {
-				var bb = paper.text_bbox(a.name, font);
+				var bb = paper.text_bbox(a.message, font);
 				a.text_bb = bb;
 
 				//var bb = t.attr("text", a.name).getBBox();
@@ -413,7 +413,7 @@
 		draw_actor : function (actor, offsetY, height) {
 			actor.y      = offsetY;
 			actor.height = height;
-			this.draw_text_box(actor, actor.name, ACTOR_MARGIN, ACTOR_PADDING, this._font);
+			this.draw_text_box(actor, actor.message, ACTOR_MARGIN, ACTOR_PADDING, this._font);
 		},
 
 		draw_signals : function (offsetY) {
@@ -523,25 +523,37 @@
 		 * x,y (int) x,y center point for this text
 		 * TODO Horz center the text when it's multi-line print
 		 */
-		draw_text : function (x, y, text, font) {
+		draw_text : function (x, y, message, font) {
 			var paper = this._paper;
 			var f = font || {};
 			var t;
 			if (f._obj) {
-				t = paper.print_center(x, y, text, f._obj, f['font-size']);
+				t = paper.print_center(x, y, message.text, f._obj, f['font-size']);
 			} else {
-				t = paper.text(x, y, text);
+				t = paper.text(x, y, message.text);
 				t.attr(f);
 			}
 			// draw a rect behind it
 			var bb = t.getBBox();
 			var r = paper.rect(bb.x, bb.y, bb.width, bb.height);
 			r.attr({'fill': "#fff", 'stroke': 'none'});
-
 			t.toFront();
+			if ( message.attr ) {
+                                _.each(message.attr.attribs, function(attr) {
+					var attrval = attr.value.split('\\n').join('\n');
+					if (attr.key.substring(0,1) == "(") {
+						var attrib = attr.key.substring(1, attr.key.length - 1);
+						var attrObj = {};
+						attrObj[attrib] = attrval;
+						t.attr(attrObj);
+					} else {
+                                		t.node.setAttribute(attr.key , attrval);
+					}
+                                });
+                        }
 		},
 
-		draw_text_box : function (box, text, margin, padding, font) {
+		draw_text_box : function (box, message, margin, padding, font) {
 			var x = box.x + margin;
 			var y = box.y + margin;
 			var w = box.width  - 2 * margin;
@@ -550,12 +562,24 @@
 			// Draw inner box
 			var rect = this.draw_rect(x, y, w, h);
 			rect.attr(LINE);
-
+			if ( message.attr ) {
+				_.each(message.attr.attribs, function(attr) {
+					var attrval = attr.value.split('\\n').join('\n');
+				        if (attr.key.substring(0,1) == "(") {
+                                                var attrib = attr.key.substring(1, attr.key.length - 1);
+                                                var attrObj = {};
+                                                attrObj[attrib] = attrval;
+                                                rect.attr(attrObj);
+                                        } else {
+						rect.node.setAttribute(attr.key , attrval);
+					}
+				});
+			}
 			// Draw text (in the center)
 			x = getCenterX(box);
 			y = getCenterY(box);
 
-			this.draw_text(x, y, text, font);
+			this.draw_text(x, y, message, font);
 		}
 
 		/**

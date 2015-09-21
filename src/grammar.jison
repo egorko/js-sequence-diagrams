@@ -23,12 +23,13 @@
 "note"            return 'note';
 "title"           return 'title';
 ","               return ',';
-[^\->:,\r\n]+     return 'ACTOR';
+[^\[\->:,\r\n]+   return 'ACTOR';
 "--"              return 'DOTLINE';
 "-"               return 'LINE';
 ">>"              return 'OPENARROW';
 ">"               return 'ARROW';
-:[^\r\n]+         return 'MESSAGE';
+:[^\[\r\n]+       return 'MESSAGE';
+"["[^\r\n]+"]"    return 'MESSAGE_ATTR';
 <<EOF>>           return 'EOF';
 .                 return 'INVALID';
 
@@ -81,10 +82,12 @@ signal
 
 actor
 	: ACTOR { $$ = yy.parser.yy.getActor(Diagram.unescape($1)); }
+	| actor attribs { $1.message.setAttr($2); }
 	;
 
 actor_alias
 	: ACTOR { $$ = yy.parser.yy.getActorWithAlias(Diagram.unescape($1)); }
+	| actor_alias attribs { $1.message.setAttr($2); }
 	;
 
 signaltype
@@ -103,8 +106,11 @@ arrowtype
 	;
 
 message
-	: MESSAGE { $$ = Diagram.unescape($1.substring(1)); }
+	: MESSAGE { $$ = new Diagram.Message(Diagram.unescape($1.substring(1))); }
+	| message attribs { $1.setAttr( $2 ); } 
 	;
 
-
+attribs
+	:MESSAGE_ATTR { $$ = new Diagram.Attributes($1.substring(1, $1.length - 1)); }
+	;
 %%

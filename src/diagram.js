@@ -22,7 +22,8 @@
 			if (actors[i].alias == alias)
 				return actors[i];
 		}
-		i = actors.push( new Diagram.Actor(alias, (name || alias), actors.length) );
+		var message = new Diagram.Message(name || alias);
+		i = actors.push( new Diagram.Actor(alias, message, actors.length) );
 		return actors[ i - 1 ];
 	};
 
@@ -53,9 +54,10 @@
 		this.signals.push( signal );
 	};
 
-	Diagram.Actor = function(alias, name, index) {
+	Diagram.Actor = function(alias, message, index) {
 		this.alias = alias;
-		this.name  = name;
+		this.name  = message.text;
+		this.message = message;
 		this.index = index;
 	};
 
@@ -91,6 +93,44 @@
 		// Turn "\\n" into "\n"
 		return s.trim().replace(/\\n/gm, "\n");
 	};
+	
+	Diagram.Message = function(message) {
+		this.type = "Message";
+		this.text = message;
+	};
+	
+	Diagram.Message.prototype.setAttr = function(attr_obj) {
+		this.attr = attr_obj;
+	};
+
+	Diagram.Attributes = function(attr_str) {
+		this.type = "Attributes";
+		var attributes = [];
+	
+		var attribs = attr_str.split(",");
+		
+		attribs.map(function(attr) {
+			/* split key value pairs foo="bar" accounting for different
+			 * quotes and spaces
+			 */
+		    /^\s*(?:'|")?(.*?)(?:'|")?\s*=\s*(?:'|")(.*?)(?:'|")?\s*$/.exec(attr);
+		    /* raphael implements attributes based on 
+		     * types of objects, however attributes that
+		     * DOT provides are flat, so we will attempt to
+		     * translate DOT attributes to raphael
+		     */	
+		    var key = RegExp.$1.toLowerCase();
+		    var value = RegExp.$2;
+		    attributes.push({
+		    	key: key,
+		    	value: value
+		    });
+		   
+		});	
+		this.attribs = attributes;
+		    
+	};
+
 
 	Diagram.LINETYPE = {
 		SOLID  : 0,
