@@ -484,6 +484,9 @@
 				'arrow-end': this.arrow_types[signal.arrowtype] + '-wide-long',
 				'stroke-dasharray': this.line_types[signal.linetype]
 			});
+			if (signal.message.attr) {
+				this.set_attribs(signal.message.attr, line);
+			}
 
 			//var ARROW_SIZE = 16;
 			//var dir = this.actorA.x < this.actorB.x ? 1 : -1;
@@ -539,18 +542,8 @@
 			r.attr({'fill': "#fff", 'stroke': 'none'});
 			t.toFront();
 			if ( message.attr ) {
-                                _.each(message.attr.attribs, function(attr) {
-					var attrval = attr.value.split('\\n').join('\n');
-					if (attr.key.substring(0,1) == "(") {
-						var attrib = attr.key.substring(1, attr.key.length - 1);
-						var attrObj = {};
-						attrObj[attrib] = attrval;
-						t.attr(attrObj);
-					} else {
-                                		t.node.setAttribute(attr.key , attrval);
-					}
-                                });
-                        }
+				this.set_attribs(message.attr, t);
+			}
 		},
 
 		draw_text_box : function (box, message, margin, padding, font) {
@@ -563,23 +556,27 @@
 			var rect = this.draw_rect(x, y, w, h);
 			rect.attr(LINE);
 			if ( message.attr ) {
-				_.each(message.attr.attribs, function(attr) {
-					var attrval = attr.value.split('\\n').join('\n');
-				        if (attr.key.substring(0,1) == "(") {
-                                                var attrib = attr.key.substring(1, attr.key.length - 1);
-                                                var attrObj = {};
-                                                attrObj[attrib] = attrval;
-                                                rect.attr(attrObj);
-                                        } else {
-						rect.node.setAttribute(attr.key , attrval);
-					}
-				});
+				this.set_attribs(message.attr, rect);
 			}
 			// Draw text (in the center)
 			x = getCenterX(box);
 			y = getCenterY(box);
 
 			this.draw_text(x, y, message, font);
+		},
+		
+		set_attribs: function(messageAttr, element){
+			_.each(messageAttr.attribs, function(attr) {
+				var attrval = attr.value.split('\\n').join('\n');
+			        if (attr.key.substring(0,1) == "(") {
+			        	var attrib = attr.key.substring(1, attr.key.length - 1);
+			        	var attrObj = {};
+			        	attrObj[attrib] = attrval;
+			        	element.attr(attrObj);
+			        } else {
+			        	element.node.setAttribute(attr.key , attrval);
+				}
+			});			
 		}
 
 		/**
