@@ -540,6 +540,7 @@
 			var bb = t.getBBox();
 			var r = paper.rect(bb.x, bb.y, bb.width, bb.height);
 			r.attr({'fill': "#fff", 'stroke': 'none'});
+			r.node.setAttribute("class","diagram-actor-text");
 			t.toFront();
 			if ( message.attr ) {
 				this.set_attribs(message.attr, t);
@@ -555,6 +556,7 @@
 			// Draw inner box
 			var rect = this.draw_rect(x, y, w, h);
 			rect.attr(LINE);
+			rect.node.setAttribute("class","diagram-actor-box");
 			if ( message.attr ) {
 				this.set_attribs(message.attr, rect);
 			}
